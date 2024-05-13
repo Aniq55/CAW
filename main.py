@@ -38,11 +38,11 @@ set_random_seed(SEED)
 logger, get_checkpoint_path, best_model_path = set_up_logger(args, sys_argv)
 
 # Load data and sanity check
-g_df = pd.read_csv('./processed/ml_{}.csv'.format(DATA))
+g_df = pd.read_csv('./processed/shuffle_ml_{}.csv'.format(DATA))
 if args.data_usage < 1:
     g_df = g_df.iloc[:int(args.data_usage*g_df.shape[0])]
     logger.info('use partial data, ratio: {}'.format(args.data_usage))
-e_feat = np.load('./processed/ml_{}.npy'.format(DATA))
+e_feat = np.load('./processed/shuffle_ml_{}.npy'.format(DATA))
 n_feat = np.load('./processed/ml_{}_node.npy'.format(DATA))
 src_l = g_df.u.values
 dst_l = g_df.i.values
@@ -54,7 +54,10 @@ assert(np.unique(np.stack([src_l, dst_l])).shape[0] == max_idx or ~math.isclose(
 assert(n_feat.shape[0] == max_idx + 1 or ~math.isclose(1, args.data_usage))  # the nodes need to map one-to-one to the node feat matrix
 
 # split and pack the data by generating valid train/val/test mask according to the "mode"
-val_time, test_time = list(np.quantile(g_df.ts, [0.70, 0.85]))
+# val_time, test_time = list(np.quantile(g_df.ts, [0.70, 0.85]))
+val_time , test_time = 1862652.1, 2218288.6 # wikipedia
+
+
 if args.mode == 't':
     logger.info('Transductive training...')
     valid_train_flag = (ts_l <= val_time)
@@ -67,7 +70,9 @@ else:
     # pick some nodes to mask (i.e. reserved for testing) for inductive setting
     total_node_set = set(np.unique(np.hstack([g_df.u.values, g_df.i.values])))
     num_total_unique_nodes = len(total_node_set)
-    mask_node_set = set(random.sample(set(src_l[ts_l > val_time]).union(set(dst_l[ts_l > val_time])), int(0.1 * num_total_unique_nodes)))
+    # mask_node_set = set(random.sample(set(src_l[ts_l > val_time]).union(set(dst_l[ts_l > val_time])), int(0.1 * num_total_unique_nodes)))
+    mask_node_set = set(random.sample( list(set(src_l[ts_l > val_time]).union(set(dst_l[ts_l > val_time]))), int(0.1 * num_total_unique_nodes)))
+
     mask_src_flag = g_df.u.map(lambda x: x in mask_node_set).values
     mask_dst_flag = g_df.i.map(lambda x: x in mask_node_set).values
     none_mask_node_flag = (1 - mask_src_flag) * (1 - mask_dst_flag)

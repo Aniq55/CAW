@@ -1062,7 +1062,7 @@ class FeatureEncoder(nn.Module):
         X = X.view(batch*n_walk, len_walk, feat_dim)
         if mask is not None:
             lengths = mask.view(batch*n_walk)
-            X = pack_padded_sequence(X, lengths, batch_first=True, enforce_sorted=False)
+            X = pack_padded_sequence(X, lengths.to('cpu'), batch_first=True, enforce_sorted=False)
         encoded_features = self.lstm_encoder(X)[0]
         if mask is not None:
             encoded_features, lengths = pad_packed_sequence(encoded_features, batch_first=True)
