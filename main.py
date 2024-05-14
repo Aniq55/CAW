@@ -38,11 +38,11 @@ set_random_seed(SEED)
 logger, get_checkpoint_path, best_model_path = set_up_logger(args, sys_argv)
 
 # Load data and sanity check
-g_df = pd.read_csv('./processed/shuffle_ml_{}.csv'.format(DATA))
+g_df = pd.read_csv('./processed/fake3_ml_{}.csv'.format(DATA))
 if args.data_usage < 1:
     g_df = g_df.iloc[:int(args.data_usage*g_df.shape[0])]
     logger.info('use partial data, ratio: {}'.format(args.data_usage))
-e_feat = np.load('./processed/shuffle_ml_{}.npy'.format(DATA))
+e_feat = np.load('./processed/fake3_ml_{}.npy'.format(DATA))
 n_feat = np.load('./processed/ml_{}_node.npy'.format(DATA))
 src_l = g_df.u.values
 dst_l = g_df.i.values
