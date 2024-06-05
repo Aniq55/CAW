@@ -392,7 +392,7 @@ class AttnModel(torch.nn.Module):
 class CAWN(torch.nn.Module):
     def __init__(self, n_feat, e_feat, agg='tree',
                  attn_mode='prod', use_time='time', attn_agg_method='attn',
-                 pos_dim=0, pos_enc='spd', walk_pool='attn', walk_n_head=8, walk_mutual=False,
+                 pos_dim=0, pos_enc='spd', walk_pool='attn', walk_n_head=2, walk_mutual=False,
                  num_layers=3, n_head=4, drop_out=0.1, num_neighbors=20, cpu_cores=1,
                  verbosity=1, get_checkpoint_path=None, walk_linear_out=False):
         super(CAWN, self).__init__()
@@ -474,6 +474,7 @@ class CAWN(torch.nn.Module):
         return attn_model_list
 
     def init_random_walk_attn_model(self):
+        # breakpoint()
         random_walk_attn_model = RandomWalkAttention(feat_dim=self.model_dim, pos_dim=self.pos_dim,
                                                      model_dim=self.model_dim, out_dim=self.feat_dim,
                                                      walk_pool=self.walk_pool,
@@ -969,7 +970,7 @@ class RandomWalkAttention(nn.Module):
     '''
     RandomWalkAttention have two modules: lstm + tranformer-self-attention
     '''
-    def __init__(self, feat_dim, pos_dim, model_dim, out_dim, logger, walk_pool='attn', mutual=False, n_head=8, dropout_p=0.1, walk_linear_out=False):
+    def __init__(self, feat_dim, pos_dim, model_dim, out_dim, logger, walk_pool='attn', mutual=False, n_head=2, dropout_p=0.1, walk_linear_out=False):
         '''
         masked flags whether or not use only valid temporal walks instead of full walks including null nodes
         '''
@@ -989,6 +990,7 @@ class RandomWalkAttention(nn.Module):
         self.position_encoder = FeatureEncoder(self.pos_dim, self.pos_dim, self.dropout_p)  # encode specifially spatio-temporal features along each temporal walk
         self.projector = nn.Sequential(nn.Linear(self.feature_encoder.model_dim+self.position_encoder.model_dim, self.attn_dim),  # notice that self.feature_encoder.model_dim may not be exactly self.model_dim is its not even number because of the usage of bi-lstm
                                        nn.ReLU(), nn.Dropout(self.dropout_p))  # TODO: whether to add #[, nn.Dropout())]?
+
         self.self_attention = TransformerEncoderLayer(d_model=self.attn_dim, nhead=self.n_head,
                                                       dim_feedforward=4*self.attn_dim, dropout=self.dropout_p,
                                                       activation='relu')

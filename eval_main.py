@@ -53,6 +53,7 @@ AGG = args.agg
 SEED = args.seed
 DISTORTION = args.distortion
 MODEL_NAME = "CAWN"
+LOAD_MODEL = args.loadmodel
 
 if DISTORTION!='':
     DISTORTION_A = DISTORTION.split('_')[0]
@@ -79,7 +80,7 @@ loguru1.add(LOG_FILE_test, level=INFO2_LEVEL, format="{message}", filter=lambda 
 
 assert(CPU_CORES >= -1)
 set_random_seed(SEED)
-logger, get_checkpoint_path, best_model_path = set_up_logger(args, sys_argv)
+logger, get_checkpoint_path, MODEL_SAVE_PATH = set_up_logger(args, sys_argv)
 
 # Load data and sanity check
 g_df = pd.read_csv(f'/home/chri6578/Documents/gttp/data/{DATA}/{DISTORTION}ml_{DATA}.csv')
@@ -176,13 +177,20 @@ cawn = CAWN(n_feat, e_feat, agg=AGG,
             n_head=ATTN_NUM_HEADS, drop_out=DROP_OUT, pos_dim=POS_DIM, pos_enc=POS_ENC,
             num_neighbors=NUM_NEIGHBORS, walk_n_head=WALK_N_HEAD, walk_mutual=WALK_MUTUAL, walk_linear_out=args.walk_linear_out, walk_pool=args.walk_pool,
             cpu_cores=CPU_CORES, verbosity=VERBOSITY, get_checkpoint_path=get_checkpoint_path)
+
+# LOAD MODEL HERE
+
+cawn.load_state_dict(torch.load(MODEL_SAVE_PATH))
+cawn = cawn.to(device)
+cawn.eval()
+
 cawn.to(device)
 optimizer = torch.optim.Adam(cawn.parameters(), lr=LEARNING_RATE)
 criterion = torch.nn.BCELoss()
 early_stopper = EarlyStopMonitor(tolerance=TOLERANCE)
 
 # start train and val phases
-train_val(train_val_data, cawn, args.mode, BATCH_SIZE, NUM_EPOCH, criterion, optimizer, early_stopper, ngh_finders, rand_samplers, logger)
+# train_val(train_val_data, cawn, args.mode, BATCH_SIZE, NUM_EPOCH, criterion, optimizer, early_stopper, ngh_finders, rand_samplers, logger)
 
 ## VALIDATION:
 val_src_l, val_dst_l, val_ts_l, val_e_idx_l, val_label_l = val_data
@@ -226,14 +234,3 @@ elif args.mode =='t':
     
     
 loguru1.log("INFO2", '\t'.join(info2_message))
-
-# save model
-logger.info('Saving CAWN model ...')
-torch.save(cawn.state_dict(), best_model_path)
-logger.info('CAWN model saved')
-
-# save one line result
-# save_oneline_result('log/', args, [test_acc, test_auc, test_ap, test_new_new_acc, test_new_new_ap, test_new_new_auc, test_new_old_acc, test_new_old_ap, test_new_old_auc])
-# save walk_encodings_scores
-# checkpoint_dir = '/'.join(cawn.get_checkpoint_path(0).split('/')[:-1])
-# cawn.save_walk_encodings_scores(checkpoint_dir)

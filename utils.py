@@ -11,11 +11,12 @@ def get_args():
 
     # select dataset and training mode
     parser.add_argument('-d', '--data', type=str, help='data sources to use, try wikipedia or reddit',
-                        choices=['wikipedia', 'reddit', 'socialevolve', 'uci', 'enron', 'socialevolve_1month', 'socialevolve_2weeks'],
                         default='wikipedia')
+    parser.add_argument('-x', '--distortion', type=str, help='distortion technique', default='')
+    parser.add_argument('-y', '--loadmodel', type=str, help='distortion technique', default='')
     parser.add_argument('--data_usage', default=1.0, type=float, help='fraction of data to use (0-1)')
     parser.add_argument('-m', '--mode', type=str, default='t', choices=['t', 'i'], help='transductive (t) or inductive (i)')
-
+    
     # method-related hyper-parameters
     parser.add_argument('--n_degree', nargs='*', default=['64', '1'],
                         help='a list of neighbor sampling numbers for different hops, when only a single element is input n_layer will be activated')
@@ -27,7 +28,7 @@ def get_args():
     parser.add_argument('--pos_dim', type=int, default=172, help='dimension of the positional embedding')
     parser.add_argument('--pos_sample', type=str, default='binary', choices=['multinomial', 'binary'], help='two equivalent sampling method with empirically different running time')
     parser.add_argument('--walk_pool', type=str, default='attn', choices=['attn', 'sum'], help='how to pool the encoded walks, using attention or simple sum, if sum will overwrite all the other walk_ arguments')
-    parser.add_argument('--walk_n_head', type=int, default=8, help="number of heads to use for walk attention")
+    parser.add_argument('--walk_n_head', type=int, default=2, help="number of heads to use for walk attention")
     parser.add_argument('--walk_mutual', action='store_true', help="whether to do mutual query for source and target node random walks")
     parser.add_argument('--walk_linear_out', action='store_true', default=False, help="whether to linearly project each node's embedding")
 

@@ -212,14 +212,14 @@ class NeighborFinder:
 
     def save_ngh_stats(self, save_dir):
         ngh_lengths, ngh_time_lengths = np.array(self.ngh_lengths), np.array(self.ngh_time_lengths)
-        plt.scatter(ngh_lengths, ngh_time_lengths)
+        # plt.scatter(ngh_lengths, ngh_time_lengths)
         avg_ngh_num = int(ngh_lengths.mean())
         avg_ngh_time_span = int(ngh_time_lengths.mean())
         avg_time_span_per_ngh = int((ngh_time_lengths/ngh_lengths).mean())
-        plt.title('avg ngh num:{}, avg ngh time span: {}, avg time span/ngh: {}'.format(avg_ngh_num, avg_ngh_time_span, avg_time_span_per_ngh))
-        plt.xlabel('number of neighbors')
-        plt.ylabel('number of neighbor time span')
-        plt.savefig('/'.join([save_dir, 'ngh_num_span.png']), dpi=200)
+        # plt.title('avg ngh num:{}, avg ngh time span: {}, avg time span/ngh: {}'.format(avg_ngh_num, avg_ngh_time_span, avg_time_span_per_ngh))
+        # plt.xlabel('number of neighbors')
+        # plt.ylabel('number of neighbor time span')
+        # plt.savefig('/'.join([save_dir, 'ngh_num_span.png']), dpi=200)
 
     def find_k_hop_walk(self, k, src_idx_l, cut_time_l, n_walk=100, e_idx_l=None, recent_bias=1.0):
         '''

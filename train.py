@@ -7,8 +7,8 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
 from eval import *
 import logging
-logging.getLogger('matplotlib.font_manager').disabled = True
-logging.getLogger('matplotlib.ticker').disabled = True
+# logging.getLogger('matplotlib.font_manager').disabled = True
+# logging.getLogger('matplotlib.ticker').disabled = True
 
 
 def train_val(train_val_data, model, mode, bs, epochs, criterion, optimizer, early_stopper, ngh_finders, rand_samplers, logger):
@@ -95,5 +95,23 @@ def train_val(train_val_data, model, mode, bs, epochs, criterion, optimizer, ear
             break
         else:
             torch.save(model.state_dict(), model.get_checkpoint_path(epoch))
+            
+
+def val(val_data, model, mode, bs, epochs, criterion, optimizer, early_stopper, ngh_finders, rand_samplers, logger):
+    # unpack the data, prepare for the training
+    val_src_l, val_dst_l, val_ts_l, val_e_idx_l, val_label_l = val_data
+    train_rand_sampler, val_rand_sampler = rand_samplers
+    partial_ngh_finder, full_ngh_finder = ngh_finders
+    
+    
+    # validation phase use all information
+    model.update_ngh_finder(full_ngh_finder)
+    val_acc, val_ap, val_f1, val_auc = eval_one_epoch('val for {} nodes'.format(mode), model, val_rand_sampler, val_src_l,
+                                                        val_dst_l, val_ts_l, val_label_l, val_e_idx_l)
+    
+    model.update_ngh_finder(partial_ngh_finder)
+    nn_val_acc, nn_val_ap, nn_val_f1, nn_val_auc = eval_one_epoch('val for {} nodes'.format(mode), model, val_rand_sampler, val_src_l,
+                                                        val_dst_l, val_ts_l, val_label_l, val_e_idx_l)
+    
 
 
